@@ -224,7 +224,7 @@ class WatchyConnectionService : Service() {
                 fullSync()
             }
             WatchyBLEState.FAST_UPDATE.value -> {
-                if(stateID != watchyStateID) {
+                if(true) {
                     // Watchy has a different state then it should have
                     Log.w(TAG, "Watchy state $stateID is not the expected $watchyStateID")
                     fullSync(state)

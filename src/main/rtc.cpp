@@ -5,7 +5,7 @@
 
 using namespace rtc;
 
-DS3232RTC rtc::RTC(false);
+Rtc_Pcf8563 rtc::RTC;
 
 RTC_DATA_ATTR bool rtc::initialized = false;
 
@@ -27,37 +27,68 @@ time_t compileTime()
   tm.Minute = atoi(compTime + 3);
   tm.Second = atoi(compTime + 6);
 
+
+
   time_t t = makeTime(tm);
   return t + FUDGE;        //add fudge factor to allow for compile time
 }
 
 void rtc::init() {
   std::lock_guard<std::mutex> guard = std::lock_guard(i2c::mutex);
-
-  RTC.squareWave(SQWAVE_NONE);
-  RTC.set(compileTime());
-  RTC.setAlarm(ALM2_EVERY_MINUTE, 0, 0, 0, 0);
-  RTC.alarmInterrupt(ALARM_2, true);
-  tmElements_t currentTime;
-  RTC.read(currentTime);
-  ESP_LOGI("RTC", "Time set to: %i:%i\n", currentTime.Hour, currentTime.Minute);
+  tmElements_t tm;
+  breakTime(compileTime(), tm);
+  RTC.setSquareWave(SQW_DISABLE);
+  RTC.setDate(tm.Day, tm.Wday, tm.Month, 0, tmYearToY2k(tm.Year));
+  RTC.setTime(tm.Second, tm.Minute, tm.Hour);
+  resetAlarm();
+  //RTC.alarmInterrupt(ALARM_2, true);
+  //tmElements_t currentTime;
+  //RTC.read(currentTime);
+  //RTC.getTime();
+  ESP_LOGI("RTC", "Time set to: %i:%i\n", RTC.getHour(), RTC.getMinute());
 }
 
-void rtc::setTime(tmElements_t newTime) {
+void rtc::resetAlarm() {
+  int nextAlarmMinute = 0;
+  RTC.clearAlarm(); // resets the alarm flag in the RTC
+  nextAlarmMinute = RTC.getMinute();
+  nextAlarmMinute = 
+  (nextAlarmMinute == 59)
+  ? 0
+  : (nextAlarmMinute + 1); // set alarm to trigger 1 minute from now
+  RTC.setAlarm(nextAlarmMinute, 99, 99, 99);
+}
+
+void rtc::setTime(tmElements_t tm) {
   std::lock_guard<std::mutex> guard = std::lock_guard(i2c::mutex);
 
-  RTC.set(makeTime(newTime));
+  //RTC.set(makeTime(newTime));
+  RTC.setDate(tm.Day, tm.Wday, tm.Month, 0, tmYearToY2k(tm.Year));
+  RTC.setTime(tm.Second, tm.Minute, tm.Hour);
+  RTC.setTime(tm.Second, tm.Minute, tm.Hour);
+
+  //RTC.getTime();
+  ESP_LOGI("RTC", "Time set to: %i:%i\n", tm.Hour, RTC.getMinute());
 }
 
 tmElements_t rtc::currentTime() {
   std::lock_guard<std::mutex> guard = std::lock_guard(i2c::mutex);
 
+  //RTC.getDate();
+  //RTC.getTime();
   tmElements_t now{};
-  RTC.read(now);
+  now.Year = RTC.getYear();
+  now.Month = RTC.getMonth();
+  now.Day = RTC.getDay();
+  now.Wday = RTC.getWeekday();
+  now.Hour = RTC.getHour();
+  now.Minute = RTC.getMinute();
+  now.Second = RTC.getSecond();
   return now;
 }
-
+/*
 void rtc::resetAlarm() {
   std::lock_guard<std::mutex> guard = std::lock_guard(i2c::mutex);
   RTC.alarm(ALARM_2);
 }
+*/
