@@ -39,13 +39,13 @@ void rtc::init() {
   breakTime(compileTime(), tm);
   RTC.setSquareWave(SQW_DISABLE);
   RTC.setDate(tm.Day, tm.Wday, tm.Month, 0, tmYearToY2k(tm.Year));
-  RTC.setTime(tm.Second, tm.Minute, tm.Hour);
+  RTC.setTime(tm.Hour, tm.Minute, tm.Second);
   resetAlarm();
   //RTC.alarmInterrupt(ALARM_2, true);
   //tmElements_t currentTime;
   //RTC.read(currentTime);
   //RTC.getTime();
-  ESP_LOGI("RTC", "Time set to: %i:%i\n", RTC.getHour(), RTC.getMinute());
+  ESP_LOGI("RTC", "Time set to: %i:%i:%i\n", RTC.getHour(), RTC.getMinute(), RTC.getSecond());
 }
 
 void rtc::resetAlarm() {
@@ -64,11 +64,10 @@ void rtc::setTime(tmElements_t tm) {
 
   //RTC.set(makeTime(newTime));
   RTC.setDate(tm.Day, tm.Wday, tm.Month, 0, tmYearToY2k(tm.Year));
-  RTC.setTime(tm.Second, tm.Minute, tm.Hour);
-  RTC.setTime(tm.Second, tm.Minute, tm.Hour);
+  RTC.setTime(tm.Hour, tm.Minute, tm.Second);
 
   //RTC.getTime();
-  ESP_LOGI("RTC", "Time set to: %i:%i\n", tm.Hour, RTC.getMinute());
+  ESP_LOGI("RTC", "Time set to: %i:%i:%i\n", RTC.getHour(), RTC.getMinute(), RTC.getSecond());
 }
 
 tmElements_t rtc::currentTime() {

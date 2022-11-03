@@ -14,7 +14,7 @@ import javax.net.ssl.SSLEngineResult
 private const val TAG = "WatchyNotifiListener"
 
 class NotificationListener : NotificationListenerService() {
-    private val packageFilter: Set<String> = hashSetOf("com.whatsapp", "com.samsung.android.email.provider")
+    private val packageFilter: Set<String> = hashSetOf("com.whatsapp", "org.thoughtcrime.securesms")
 
     private var bound = false
 
